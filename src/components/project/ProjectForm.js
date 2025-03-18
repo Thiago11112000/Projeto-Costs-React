@@ -4,9 +4,9 @@ import Select from '../form/Select';
 import SubmitButton from '../form/SubmitButton';
 import styles from './ProjectForm.module.css';
 
-function ProjectForm({ btnText }) {
+function ProjectForm({ handleSubmit,btnText,projectData}) {
     const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(''); // Adicione este estado
+    const [project, setProject ] = useState(projectData || {})
 
     useEffect(() => {
         fetch('http://localhost:5000/categories', {
@@ -22,17 +22,33 @@ function ProjectForm({ btnText }) {
             .catch((err) => console.log(err));
     }, []);
 
-    const handleCategoryChange = (event) => {
-        setSelectedCategory(event.target.value);
-    };
+    const submit = (e) =>{
+        e.preventDefault()
+        console.log(project)
+        handleSubmit(project)
+    }
+    function handleChange(e){
+        setProject ({ ... project, [e.target.name]: e.target.value})
+        console.log(project)
+    }
 
+    function handleCategory(e) {
+        setProject({
+          ...project,
+          category: {
+            id: e.target.value,
+            name: e.target.options[e.target.selectedIndex].text,
+          },
+        });
+      }
     return (
-        <form className={styles.form}>
+        <form  onSubmit={submit} className={styles.form}>
             <Input
                 type="text"
                 text="Nome do projeto"
                 name="name"
                 placeholder="Insira o nome do projeto"
+                handleOnchange={handleChange}
             />
 
             <Input
@@ -40,13 +56,14 @@ function ProjectForm({ btnText }) {
                 text="Orçamento do projeto"
                 name="budget"
                 placeholder="Insira o orçamento total"
+                handleOnchange={handleChange}
             />
             <Select
                 name="category_id"
                 text="Selecione a categoria"
                 options={categories}
-                handleOnchange={handleCategoryChange} // Passe a função de mudança
-                value={selectedCategory}
+                handleOnChange={handleCategory}
+                value={project.category ? project.category.id : ''}
             />
 
             <SubmitButton text={btnText} />
