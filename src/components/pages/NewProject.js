@@ -15,22 +15,36 @@ function NewProject(){
                 "Content-Type":"application/json",
             },
             body: JSON.stringify(project),
-        }).then( (resp) =>  resp.json()) 
-            .then((data) => {
-                console.log(data)
-                // redirect
-                navigate('/projects')
-            }).catch(err => console.log(err))
-        } 
-
+        })
+        .then((resp) => resp.json())
+        .then((data) => {
+            console.log(data)
+            // redirect
+            navigate('/projects', { 
+                state: { 
+                    message: 'Projeto criado com sucesso!',
+                    type: 'success'
+                } 
+            })
+        })
+        .catch(err => {
+            console.log(err)
+            navigate('/projects', { 
+                state: { 
+                    message: 'Erro ao criar projeto!',
+                    type: 'error'
+                } 
+            })
+        })
+    } 
     
     return (
-            <div className={styles.newproject_container}>
-             <h1>Criar Projeto</h1>
-             <p> Crie  seu projeto para depois adicionar os serviços </p>
-        <ProjectForm handleSubmit={createPost} btnText="Criar Projeto"/>
-            </div>
+        <div className={styles.newproject_container}>
+            <h1>Criar Projeto</h1>
+            <p>Crie seu projeto para depois adicionar os serviços</p>
+            <ProjectForm handleSubmit={createPost} btnText="Criar Projeto"/>
+        </div>
     )
-    
-    }
-    export default NewProject;
+}
+
+export default NewProject;
