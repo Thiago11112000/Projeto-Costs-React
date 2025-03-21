@@ -30,8 +30,15 @@
         "id": "2",
         "name": "Desenvolvimento"
       },
-      "cost": 0,
-      "services": []
+      "cost": 100,
+      "services": [
+        {
+          "name": "Meu novo serviço 2",
+          "cost": "100",
+          "description": "abc",
+          "id": "f646b47f-3e78-4abb-940a-66e247521126"
+        }
+      ]
     },
     {
       "id": "12e7",

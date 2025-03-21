@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'; // Removed unused 'parse' import
 import styles from './Project.module.css';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ import ServiceForm from '../service/ServiceForm';
 function Project() {
   const { id } = useParams();
 
-  const [project, setProject] = useState([]);
+  const [project, setProject] = useState({});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [message, setMessage] = useState();
@@ -27,6 +28,10 @@ function Project() {
       })
         .then(resp => resp.json())
         .then((data) => {
+          // Ensure services is an array
+          if (!data.services) {
+            data.services = [];
+          }
           setProject(data);
         })
         .catch((err) => console.log(err));
@@ -35,7 +40,6 @@ function Project() {
 
   function editPost(project) {
     setMessage('');
-    // Budget validation
     if (project.budget < project.cost) {
       setMessage('O orçamento não pode ser menor que o custo do projeto!');
       setType('error');
@@ -44,7 +48,7 @@ function Project() {
     fetch(`http://localhost:5000/projects/${id}`, {
       method: 'PATCH',
       headers: {
-        'Content-Type': 'application/json', // Fixed: Corrected 'contentType' to 'Content-Type'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(project),
     })
@@ -60,26 +64,29 @@ function Project() {
 
   function createService(project) {
     setMessage('');
-    
-    // last service
+
+    // Get the last service added (from ServiceForm)
     const lastService = project.services[project.services.length - 1];
-    lastService.id = Math.floor(Math.random() * 10000);
+    lastService.id = uuidv4();
 
-    // service cost validation
-    const lastServiceCost = lastService.cost;
-    const newCost = parseFloat(project.cost) + parseFloat(lastServiceCost);
+    const lastServiceCost = parseFloat(lastService.cost);
+    const newCost = parseFloat(project.cost) + lastServiceCost;
 
-    // maximum value validation
+    // Maximum value validation
     if (newCost > parseFloat(project.budget)) {
-      setMessage('Orçamento ultrapassado, verifique o valor do serviço!');
+      setMessage('Orçamento ultrapassado, verifique o valor do serviço');
       setType('error');
       project.services.pop();
       return false;
     }
 
-    // add service cost to project cost
+
+    // add service cost to projec total cost
     project.cost = newCost;
 
+    
+
+    // Update project in the backend
     fetch(`http://localhost:5000/projects/${project.id}`, {
       method: 'PATCH',
       headers: {
@@ -89,6 +96,7 @@ function Project() {
     })
       .then(resp => resp.json())
       .then((data) => {
+        setProject(data); // Update the state with the new project data
         setShowServiceForm(false);
         setMessage('Serviço adicionado com sucesso!');
         setType('success');
@@ -148,7 +156,11 @@ function Project() {
               </div>
               <div className={styles.project_info}>
                 {showServiceForm && (
-                  <div>formulário do serviço</div>
+                  <ServiceForm
+                    handleSubmit={createService}
+                    btnText="Adicionar Serviço"
+                    projectData={project}
+                  />
                 )}
               </div>
             </div>
