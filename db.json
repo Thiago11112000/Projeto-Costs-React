@@ -8,8 +8,21 @@
         "id": "2",
         "name": "Desenvolvimento"
       },
-      "cost": 0,
-      "services": []
+      "cost": 1500,
+      "services": [
+        {
+          "name": "novo serviço",
+          "cost": "1000",
+          "description": "serviço",
+          "id": "31599b5f-26b7-46f7-aa13-b50bb490efff"
+        },
+        {
+          "name": "Adicionar função",
+          "cost": "500",
+          "description": "adicionando função",
+          "id": "16b7e690-4dd5-483b-89aa-8981c6d8db03"
+        }
+      ]
     },
     {
       "id": "bc55",
