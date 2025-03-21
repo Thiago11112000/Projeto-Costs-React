@@ -96,7 +96,8 @@ function Project() {
     })
       .then(resp => resp.json())
       .then((data) => {
-        setProject(data); // Update the state with the new project data
+        setProject(data);
+        setServices(data.services);
         setShowServiceForm(false);
         setMessage('Serviço adicionado com sucesso!');
         setType('success');
@@ -104,7 +105,32 @@ function Project() {
       .catch(err => console.log(err));
   }
 
-  function removeService() {
+  function removeService(id, cost) {
+    const servicesUpdated = project.services.filter(
+      (service) => service.id !== id
+    );
+
+    const projectUpdated = {...project};
+    projectUpdated.services = servicesUpdated;
+
+    const newCost = parseFloat(projectUpdated.cost) - parseFloat(cost);
+    projectUpdated.cost = newCost >= 0 ? newCost : 0;
+
+    fetch(`http://localhost:5000/projects/${projectUpdated.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(projectUpdated)
+    })
+    .then((resp) => resp.json())
+    .then((data) => {
+      setProject(projectUpdated);
+      setServices(servicesUpdated);
+      setMessage('Serviço removido com sucesso!');
+      setType('success');
+    })
+    .catch((err) => console.log(err));
   }
 
   function toggleProjectForm() {

@@ -8,19 +8,19 @@
         "id": "2",
         "name": "Desenvolvimento"
       },
-      "cost": 1500,
+      "cost": 400,
       "services": [
         {
-          "name": "novo serviço",
-          "cost": "1000",
-          "description": "serviço",
-          "id": "31599b5f-26b7-46f7-aa13-b50bb490efff"
+          "name": "Teste",
+          "cost": "200",
+          "description": "teste",
+          "id": "7810e350-b002-44a7-9d4b-bdf1ed12e359"
         },
         {
-          "name": "Adicionar função",
-          "cost": "500",
-          "description": "adicionando função",
-          "id": "16b7e690-4dd5-483b-89aa-8981c6d8db03"
+          "name": "teste 2",
+          "cost": "200",
+          "description": "teste 2",
+          "id": "77de324e-a12c-4714-9112-077f5f412d65"
         }
       ]
     },
