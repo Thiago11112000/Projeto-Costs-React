@@ -1,30 +1,102 @@
 import styles from './Project.module.css';
-import {useParams} from 'react-router-dom';
-import {useState, useEffect} from 'react';
-function  Project  () {
+import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
-const { id } = useParams();
+import Loading from '../layout/Loading';
+import Container from '../layout/Container';
+import Message from '../layout/Message';
+import ProjectForm from '../project/ProjectForm';
+function Project() {
+  const { id } = useParams();
 
-const [project, setProject] = useState([]);
-useEffect(() => {
-    fetch(`http://localhost:5000/projects/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(resp => resp.json())
-      .then((data) => {
-        setProject(data);
+  const [project, setProject] = useState([]);
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [message, setMessage] = useState();
+  const [type, setType] = useState();
+  useEffect(() => {
+    setTimeout(() => {
+      fetch(`http://localhost:5000/projects/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
-      .catch((err) => console.log(err));
+        .then(resp => resp.json())
+        .then((data) => {
+          setProject(data);
+        })
+        .catch((err) => console.log(err));
+    }, 300);
   }, [id]);
-  
-
+function editPost(project){
+  setMessage('');
+  //Budget validation
+if (project.budget < project.cost){
+   setMessage('O orçamento não pode ser menor que o custo do projeto!');
+   setType('error');
+   return false;
+}
+  fetch(`http://localhost:5000/projects/${id}`, {
+    method: 'PATCH',
+    headers: {
+      contentType: 'application/json',
+    },
+    body: JSON.stringify(project),
+  })
+  .then(resp => resp.json())
+  .then((data) => {
+    setProject(data);
+    setShowProjectForm(false);
+    setMessage('Projeto Atualizado');
+    setType('success');
+  })
+  .catch(err => console.log(err));
+}
+  function toggleProjectForm() {
+    setShowProjectForm(!showProjectForm);
+  }
 
   return (
-    <p>{project.name}</p>
-  )
+    <>
+      {project.name ? (
+        <div className={styles.project_details}>
+          <Container customClass="column">
+            {message &&  <Message type={type} msg={message} /> }
+            <div className={styles.details_container}>
+              <div className={styles.project_header}>
+                <h1>Projeto: {project.name}</h1>
+                <button className={styles.btn} onClick={toggleProjectForm}>
+                  {!showProjectForm ? 'Editar Projeto' : 'Fechar'}
+                </button>
+              </div>
+              {!showProjectForm ? (
+                <div className={styles.project_info}>
+                  <p>
+                    <span>Categoria:</span> {project.category.name}
+                  </p>
+                  <p>
+                    <span>Total do orçamento:</span> R${project.budget}
+                  </p>
+                  <p>
+                    <span>Total Utilizado:</span> R${project.cost}
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.project_info}>
+                  <ProjectForm
+                   handleSubmit={editPost}
+                    btnText="Concluir Edição"
+                     projectData={project}/>
+                </div>
+              )}
+            </div>
+          </Container>
+        </div>
+      ) : (
+        <Loading />
+      )}
+    </>
+  );
 }
 
-export default Project
+export default Project;
