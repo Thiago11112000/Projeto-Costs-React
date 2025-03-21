@@ -6,13 +6,17 @@ import Loading from '../layout/Loading';
 import Container from '../layout/Container';
 import Message from '../layout/Message';
 import ProjectForm from '../project/ProjectForm';
+import ServiceForm from '../service/ServiceForm';
+
 function Project() {
   const { id } = useParams();
 
   const [project, setProject] = useState([]);
   const [showProjectForm, setShowProjectForm] = useState(false);
+  const [showServiceForm, setShowServiceForm] = useState(false);
   const [message, setMessage] = useState();
   const [type, setType] = useState();
+
   useEffect(() => {
     setTimeout(() => {
       fetch(`http://localhost:5000/projects/${id}`, {
@@ -28,32 +32,76 @@ function Project() {
         .catch((err) => console.log(err));
     }, 300);
   }, [id]);
-function editPost(project){
-  setMessage('');
-  //Budget validation
-if (project.budget < project.cost){
-   setMessage('O orçamento não pode ser menor que o custo do projeto!');
-   setType('error');
-   return false;
-}
-  fetch(`http://localhost:5000/projects/${id}`, {
-    method: 'PATCH',
-    headers: {
-      contentType: 'application/json',
-    },
-    body: JSON.stringify(project),
-  })
-  .then(resp => resp.json())
-  .then((data) => {
-    setProject(data);
-    setShowProjectForm(false);
-    setMessage('Projeto Atualizado');
-    setType('success');
-  })
-  .catch(err => console.log(err));
-}
+
+  function editPost(project) {
+    setMessage('');
+    // Budget validation
+    if (project.budget < project.cost) {
+      setMessage('O orçamento não pode ser menor que o custo do projeto!');
+      setType('error');
+      return false;
+    }
+    fetch(`http://localhost:5000/projects/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json', // Fixed: Corrected 'contentType' to 'Content-Type'
+      },
+      body: JSON.stringify(project),
+    })
+      .then(resp => resp.json())
+      .then((data) => {
+        setProject(data);
+        setShowProjectForm(false);
+        setMessage('Projeto Atualizado');
+        setType('success');
+      })
+      .catch(err => console.log(err));
+  }
+
+  function createService(project) {
+    setMessage('');
+    
+    // last service
+    const lastService = project.services[project.services.length - 1];
+    lastService.id = Math.floor(Math.random() * 10000);
+
+    // service cost validation
+    const lastServiceCost = lastService.cost;
+    const newCost = parseFloat(project.cost) + parseFloat(lastServiceCost);
+
+    // maximum value validation
+    if (newCost > parseFloat(project.budget)) {
+      setMessage('Orçamento ultrapassado, verifique o valor do serviço!');
+      setType('error');
+      project.services.pop();
+      return false;
+    }
+
+    // add service cost to project cost
+    project.cost = newCost;
+
+    fetch(`http://localhost:5000/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(project),
+    })
+      .then(resp => resp.json())
+      .then((data) => {
+        setShowServiceForm(false);
+        setMessage('Serviço adicionado com sucesso!');
+        setType('success');
+      })
+      .catch(err => console.log(err));
+  }
+
   function toggleProjectForm() {
     setShowProjectForm(!showProjectForm);
+  }
+
+  function toggleServiceForm() {
+    setShowServiceForm(!showServiceForm);
   }
 
   return (
@@ -61,7 +109,7 @@ if (project.budget < project.cost){
       {project.name ? (
         <div className={styles.project_details}>
           <Container customClass="column">
-            {message &&  <Message type={type} msg={message} /> }
+            {message && <Message type={type} msg={message} />}
             <div className={styles.details_container}>
               <div className={styles.project_header}>
                 <h1>Projeto: {project.name}</h1>
@@ -84,11 +132,31 @@ if (project.budget < project.cost){
               ) : (
                 <div className={styles.project_info}>
                   <ProjectForm
-                   handleSubmit={editPost}
+                    handleSubmit={editPost}
                     btnText="Concluir Edição"
-                     projectData={project}/>
+                    projectData={project}
+                  />
                 </div>
               )}
+            </div>
+            <div className={styles.service_form_container}>
+              <div className={styles.service_header}>
+                <h2>Adicione um serviço:</h2>
+                <button className={styles.btn} onClick={toggleServiceForm}>
+                  {!showServiceForm ? 'Adicionar serviço' : 'Fechar'}
+                </button>
+              </div>
+              <div className={styles.project_info}>
+                {showServiceForm && (
+                  <div>formulário do serviço</div>
+                )}
+              </div>
+            </div>
+            <div className={styles.service_container}>
+              <h2>Serviços</h2>
+              <Container customClass="start">
+                <p>Itens de serviços</p>
+              </Container>
             </div>
           </Container>
         </div>
